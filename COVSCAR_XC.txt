@@ -1,0 +1,100 @@
+model {
+
+# CAR prior - spatial random effect
+
+for(j in 1:sumNeigh){weights[j] <- 1}
+spacesigma ~ dunif(0,5)
+spacetau <- 1/(spacesigma*spacesigma)
+alpha[1:nCell] ~ car.normal(adj[],weights[],num[],spacetau)
+
+### data model
+
+for (i in 1:nMuni){   #loop over sites
+    mu[i] <- beta[1] + beta[2]*VegCover[i] + beta[3]*ArauCover[i] + beta[4]*Alt[i] + alpha[cell.id[i]]
+    mu.lim[i] <- min(10, max(-10, mu[i]))  
+    logit(psi[i]) <- mu.lim[i]
+    z[i] ~ dbern(psi[i])
+}
+
+#for (n in 1:nObs1){      #loop over observations – Count Data - Data In
+#    e1[n] <- BETA[1]*TObs[n]
+#    P1[n] <- 1-pow((1-0.5), e1[n])
+#    zP1[n] <- P1[n]*z[muni1[n]]  
+#    Y1[n] ~ dbern(zP1[n])
+#}
+
+#for (o in 1:nObs2){      #loop over observations – Count Data - Data Out
+#    e2[o] <- BETA[1]*TObs2[o]
+#    P2[o] <- 1-pow((1-0.5), e2[o])
+#    zP2[o] <- P2[o]*z[muni2[o]]   
+#    Y2[o] ~ dbern(zP2[o])
+#    Pred2[o] <- pow((Ytruth2[o]-Y2[o]),2)  #Brier Score
+#}
+
+#for (j in 1:nObs3){    #loop over observations – eBird Data - Data In
+#    e3[j] <- BETA[2]*SSee[j] + BETA[3]*TObs3[j] + BETA[4]*RLen[j] 
+#    P3[j] <- 1-pow((1-0.5), e3[j])
+#    zP3[j] <- P3[j]*z[muni3[j]]
+#    Y3[j] ~ dbern(zP3[j])
+#}
+
+#for (p in 1:nObs4){  #loop over observations – eBird Data - Data Out
+#    e4[p] <- BETA[2]*SSee2[p] + BETA[3]*TObs4[p] + BETA[4]*RLen2[p]  
+#    P4[p] <- 1-pow((1-0.5), e4[p])
+#    zP4[p] <- P4[p]*z[muni4[p]]
+#    Y4[p] ~ dbern(zP4[p])
+#    Pred4[p] <- pow((Ytruth4[p]-Y4[p]),2)  #Brier Score
+#}
+
+#for (k in 1:nObs5){  #loop over observations – Wikiaves data - Data In
+#    e5[k] <- BETA[2]*NPho[k] + BETA[3]*NAud[k] 
+#    P5[k] <- 1-pow((1-0.5), e5[k])
+#    zP5[k] <- P5[k]*z[muni5[k]]
+#    Y5[k] ~ dbern(zP5[k])
+#}
+
+#for (s in 1:nObs6){  #loop over observations – Wikiaves data - Data Out
+#    e6[s] <- BETA[2]*NPho2[s] + BETA[3]*NAud2[s] 
+#    P6[s] <- 1-pow((1-0.5), e6[s])
+#    zP6[s] <- P6[s]*z[muni6[s]]
+#    Y6[s] ~ dbern(zP6[s])
+#    Pred6[s] <- pow((Ytruth6[s]-Y6[s]),2)  #Brier Score
+#}
+
+for (h in 1:nObs7){  #loop over observations – Xeno-Canto data
+    e7[h] <- BETA[4]*NAud3[h]  
+    P7[h] <- 1-pow((1-0.5), e7[h])
+    zP7[h] <- P7[h]*z[muni7[h]]
+    Y7[h] ~ dbern(zP7[h])
+}
+
+for (t in 1:nObs8){  #loop over observations – Xeno-Canto data
+    e8[t] <- BETA[4]*NAud4[t]  
+    P8[t] <- 1-pow((1-0.5), e8[t])
+    zP8[t] <- P8[t]*z[muni8[t]]
+    Y8[t] ~ dbern(zP8[t])
+    Pred8[t] <- pow((Ytruth8[t]-Y8[t]),2)  #Brier Score
+}
+
+beta[1] ~ dunif(-10,10)
+beta[2] ~ dunif(-10,10)
+beta[3] ~ dunif(-10,10)
+beta[4] ~ dunif(-10,10)
+
+#for (b in 1:4){
+#  BETA[b] ~ dnorm(0,0.0001)I(0,10000)
+#}
+
+BETA[4] ~ dnorm(0,0.0001)I(0,10000)
+
+#compute the mean detection probability of each dataset: 
+#muP1 <- mean(P1[])
+#muP2 <- mean(P2[])
+#muP3 <- mean(P3[])
+#muP4 <- mean(P4[])
+#muP5 <- mean(P5[])
+#muP6 <- mean(P6[])
+muP7 <- mean(P7[])
+muP8 <- mean(P8[])
+
+}
