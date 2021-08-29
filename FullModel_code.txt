@@ -1,0 +1,63 @@
+model {
+
+# CAR prior - spatial random effect
+
+for(j in 1:sumNeigh){weights[j] <- 1}
+spacesigma ~ dunif(0,5)
+spacetau <- 1/(spacesigma*spacesigma)
+alpha[1:nCell] ~ car.normal(adj[],weights[],num[],spacetau)
+  
+
+### data model
+
+for (i in 1:nMuni){   #loop over sites
+    mu[i] <- alpha[cell.id[i]] + beta[1] + beta[2]*VegCover[i] + beta[3]*ArauCover[i] + beta[4]*Alt[i]
+    mu.lim[i] <- min(10, max(-10, mu[i]))  
+    logit(psi[i]) <- mu.lim[i]
+    z[i] ~ dbern(psi[i])
+}
+
+for (n in 1:nObs1){      #loop over observations – Count Data
+    e1[n] <- BETA[1]*TObs[n]
+    P1[n] <- 1-pow((1-0.5), e1[n])
+    zP1[n] <- P1[n]*z[muni1[n]]  
+    Y1[n] ~ dbern(zP1[n])
+}
+
+for (j in 1:nObs2){    #loop over observations – eBird Data
+    e2[j] <- BETA[2]*SSee[j] + BETA[3]*TObs2[j] + BETA[4]*RLen[j] 
+    P2[j] <- 1-pow((1-0.5),e2[j])
+    zP2[j] <- P2[j]*z[muni2[j]]
+    Y2[j] ~ dbern(zP2[j])
+}
+
+for (k in 1:nObs3){  #loop over observations – Wikiaves data
+    e3[k] <- BETA[5]*NPho[k] + BETA[6]*NAud[k] 
+    P3[k] <- 1-pow((1-0.5), e3[k])
+    zP3[k] <- P3[k]*z[muni3[k]]
+    Y3[k] ~ dbern(zP3[k])
+}
+
+for (h in 1:nObs4){  #loop over observations – Xeno-Canto data
+    e4[h] <- BETA[7]*NAud2[h]  
+    P4[h] <- 1-pow((1-0.5), e4[h])
+    zP4[h] <- P4[h]*z[muni4[h]]
+    Y4[h] ~ dbern(zP4[h])
+}
+
+beta[1] ~ dunif(-10,10)
+beta[2] ~ dunif(-10,10)
+beta[3] ~ dunif(-10,10)
+beta[4] ~ dunif(-10,10)
+
+for (b in 1:7){
+  BETA[b] ~ dnorm(0,0.0001)I(0,10000)
+}
+
+#compute the mean detection probability of each dataset: 
+muP1 <- mean(P1[])
+muP2 <- mean(P2[])
+muP3 <- mean(P3[])
+muP4 <- mean(P4[])
+
+}
